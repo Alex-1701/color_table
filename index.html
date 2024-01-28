@@ -59,6 +59,8 @@
 
 <div class="selectors">
 
+  <select name="css-units" id="measure_unit_select" oninput="handleTableChange()"></select>
+
   <div class="selector_with_unit">
     <label>Ширина таблицы
       <input value="3" type="number" oninput="handleTableChange()" inputmode="numeric" id="table_width_input"
@@ -71,28 +73,24 @@
     <label>Ширина ячейки
       <input type="number" oninput="handleTableChange()" inputmode="decimal" min="0" id="cell_width_input">
     </label>
-    <select name="css-units" id="cell_width_select" oninput="handleTableChange()"></select>
   </div>
 
   <div class="selector_with_unit">
     <label>Высота ячейки
       <input type="number" oninput="handleTableChange()" inputmode="decimal" min="0" id="cell_height_input">
     </label>
-    <select name="css-units" id="cell_height_select" oninput="handleTableChange()"></select>
   </div>
 
   <div class="selector_with_unit">
     <label>Размер текста
       <input type="number" oninput="handleTableChange()" inputmode="decimal" min="0" id="font_size_input">
     </label>
-    <select name="css-units" id="font_size_select" oninput="handleTableChange()"></select>
   </div>
 
   <div class="selector_with_unit">
     <label>Ширина границы
       <input type="number" oninput="handleTableChange()" inputmode="decimal" min="0" id="border_width_input">
     </label>
-    <select name="css-units" id="border_width_select" oninput="handleTableChange()"></select>
   </div>
 
   <div class="selector_with_unit">
@@ -2217,24 +2215,18 @@
     ]
 
     const generateStyle = () => {
+        const measureUnit = document.getElementById("measure_unit_select").value;
         const cellWidth = +document.getElementById("cell_width_input").value;
-        const cellWidthMeasureUnit = document.getElementById("cell_width_select").value;
-
         const fontSize = document.getElementById("font_size_input").value;
-        const fontSizeMeasureUnit = document.getElementById("border_width_select").value;
 
         return `
           <style>
             .text {
               font-family: Arial, Helvetica, sans-serif;
-              font-size: ${fontSize}${fontSizeMeasureUnit};
-              line-height: ${fontSize}${fontSizeMeasureUnit};
-              width: ${cellWidth}${cellWidthMeasureUnit};
+              font-size: ${fontSize}${measureUnit};
+              line-height: ${fontSize}${measureUnit};
+              width: ${cellWidth}${measureUnit};
               overflow: hidden;
-            }
-
-            .rect-personal {
-              width: 50mm;
             }
           </style>`
     }
@@ -2304,6 +2296,8 @@
             </svg>`
         })
 
+        // окошка дюйм на пол дюйма
+
         const rowNumber = Math.ceil(subArray.length / columnNumber);
 
         const svgWidth = columnNumber * cellWidth + (columnNumber - 1) * borderWidth;
@@ -2356,7 +2350,6 @@
         const cssUnits = [
             {value: "cm", name: "Centimeters"},
             {value: "mm", name: "Millimeters"},
-            {value: "cm", name: "Centimeters"},
             {value: "Q", name: "Quarter-millimeters"},
             {value: "in", name: "Inches"},
             {value: "pc", name: "Picas"},
@@ -2371,20 +2364,12 @@
         })
 
         // let's set default values
+        document.getElementById("measure_unit_select").value = "px";
         document.getElementById("table_width_input").value = 10;
-
-        document.getElementById("cell_width_input").value = 50;
-        // document.getElementById("cell_width_select").value = "px";
-
-        document.getElementById("cell_height_input").value = 50;
-        // document.getElementById("cell_height_select").value = "px";
-
-        document.getElementById("font_size_input").value = 12;
-        // document.getElementById("font_size_select").value = "px";
-
+        document.getElementById("cell_width_input").value = 300;
+        document.getElementById("cell_height_input").value = 300;
+        document.getElementById("font_size_input").value = 14;
         document.getElementById("border_width_input").value = 5;
-        document.getElementById("border_width_select").value = "px";
-
         document.getElementById("on_page_count_input").value = 100;
         document.getElementById("page_number_input").value = 1;
 
