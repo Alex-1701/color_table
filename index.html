@@ -29,24 +29,48 @@
           display: flex;
           flex-direction: column;
           gap: 5px;
+          width: fit-content;
       }
 
-      .selector_with_unit {
+      .selector_with_unit, .selector_without_unit {
           display: flex;
           flex-direction: row;
+          justify-content: space-between;
+          gap: 10px;
       }
 
       .selector_with_unit label {
           margin-right: 10px;
       }
 
-      input {
+      .selector_with_unit div {
+          display: flex;
+      }
+
+      .selector_without_unit {
+          margin-right: 50px;
+      }
+
+      .selector_with_unit input {
           width: 100px;
-          font-size: 14pt;
+          font-size: 14pt
+      }
+
+      .selector_without_unit input {
+          width: 100px;
+          font-size: 14pt
+      }
+
+      input[type="button"] {
+          width: 250px;
+          font-size: 25px;
+          font-weight: bolder;
+          height: 40px;
       }
 
       .selectors p {
           margin: 0;
+          width: 50px;
       }
 
       svg {
@@ -58,51 +82,54 @@
 <body>
 
 <div class="selectors">
-
-  <select name="css-units" id="measure_unit_select" oninput="handleTableChange()"></select>
-
   <div class="selector_with_unit">
-    <label>Ширина таблицы
-      <input value="3" type="number" oninput="handleTableChange()" inputmode="numeric" id="table_width_input"
-             min="1">
-    </label>
-    <p>(шт)</p>
+    <label>Количество ячеек в строке</label>
+    <div>
+      <input value="3" type="number" oninput="handleTableChange()" inputmode="numeric" id="table_width_input" min="1">
+      <p>(шт)</p>
+    </div>
   </div>
 
   <div class="selector_with_unit">
-    <label>Ширина ячейки
+    <label>Ширина ячейки</label>
+    <div>
       <input type="number" oninput="handleTableChange()" inputmode="decimal" min="0" id="cell_width_input">
-    </label>
+      <p>(px)</p>
+    </div>
   </div>
 
   <div class="selector_with_unit">
-    <label>Высота ячейки
+    <label>Высота ячейки</label>
+    <div>
       <input type="number" oninput="handleTableChange()" inputmode="decimal" min="0" id="cell_height_input">
-    </label>
+      <p>(px)</p>
+    </div>
   </div>
 
   <div class="selector_with_unit">
-    <label>Размер текста
+    <label>Размер текста</label>
+    <div>
       <input type="number" oninput="handleTableChange()" inputmode="decimal" min="0" id="font_size_input">
-    </label>
+      <p>(px)</p>
+    </div>
   </div>
 
   <div class="selector_with_unit">
-    <label>Ширина границы
+    <label>Ширина границы</label>
+    <div>
       <input type="number" oninput="handleTableChange()" inputmode="decimal" min="0" id="border_width_input">
-    </label>
+      <p>(px)</p>
+    </div>
   </div>
 
-  <div class="selector_with_unit">
-    <label>Номер страницы
-      <input type="number" oninput="handleTableChange()" inputmode="numeric" min="0" id="page_number_input">
-    </label>
+  <div class="selector_without_unit">
+    <label>Номер страницы</label>
+    <input type="number" oninput="handleTableChange()" inputmode="numeric" min="0" id="page_number_input">
   </div>
 
-  <div class="selector_with_unit">
-    <label>Количество на странице
-      <input type="number" oninput="handleTableChange()" inputmode="numeric" min="0" id="on_page_count_input">
-    </label>
+  <div class="selector_without_unit">
+    <label>Количество на странице</label>
+    <input type="number" oninput="handleTableChange()" inputmode="numeric" min="0" id="on_page_count_input">
   </div>
 </div>
 
@@ -2214,18 +2241,35 @@
         {nColor: "19-6311", cName: "Greener Pastures", cHex: "2c4c32", cType: "Dark"}
     ]
 
+    const Inputs = {
+        tableWidth: {id: "table_width_input", default: 10},
+        cellWidth: {id: "cell_width_input", default: 300},
+        cellHeight: {id: "cell_height_input", default: 300},
+        fontSize: {id: "font_size_input", default: 30},
+        borderWidth: {id: "border_width_input", default: 55},
+        onPageCount: {id: "on_page_count_input", default: 100},
+        pageNumber: {id: "page_number_input", default: 1},
+    }
+
+    function getValue(inputObject) {
+        return +document.getElementById(inputObject.id).value;
+    }
+
+    function setValue(inputObject, value) {
+        document.getElementById(inputObject.id).value = value;
+    }
+
     const generateStyle = () => {
-        const measureUnit = document.getElementById("measure_unit_select").value;
-        const cellWidth = +document.getElementById("cell_width_input").value;
-        const fontSize = document.getElementById("font_size_input").value;
+        const cellWidth = getValue(Inputs.cellWidth)
+        const fontSize = getValue(Inputs.fontSize)
 
         return `
           <style>
             .text {
               font-family: Arial, Helvetica, sans-serif;
-              font-size: ${fontSize}${measureUnit};
-              line-height: ${fontSize}${measureUnit};
-              width: ${cellWidth}${measureUnit};
+              font-size: ${fontSize}px};
+              line-height: ${fontSize}px;
+              width: ${cellWidth}px;
               overflow: hidden;
             }
           </style>`
@@ -2246,13 +2290,13 @@
     }
 
     function createSVG() {
-        const columnNumber = +document.getElementById("table_width_input").value;
-        const cellWidth = +document.getElementById("cell_width_input").value;
-        const cellHeight = +document.getElementById("cell_height_input").value;
-        const borderWidth = +document.getElementById("border_width_input").value;
-        const numberOnPage = +document.getElementById("on_page_count_input").value;
-        const pageNumber = +document.getElementById("page_number_input").value;
-        const fontSize = +document.getElementById("font_size_input").value;
+        const columnNumber = getValue(Inputs.tableWidth)
+        const cellWidth = getValue(Inputs.cellWidth)
+        const cellHeight = getValue(Inputs.cellHeight)
+        const borderWidth = getValue(Inputs.borderWidth);
+        const numberOnPage = getValue(Inputs.onPageCount)
+        const pageNumber = getValue(Inputs.pageNumber)
+        const fontSize = getValue(Inputs.fontSize)
 
         let rowIndex = 0;
         let columnIndex = 0;
@@ -2260,8 +2304,7 @@
         const startNumber = (pageNumber - 1) * numberOnPage;
         const subArray = data.slice(startNumber, startNumber + numberOnPage);
 
-        const MAGIC_NUMBER = 1.11 // this number used to compensate text that ignores my CSS and growing higher
-        const svgTagHeight = cellHeight + 4 * fontSize * MAGIC_NUMBER;
+        const svgTagHeight = cellHeight + 5 * fontSize;
 
         const cellsArray = subArray.map((item, index) => {
             const prevRowIndex = rowIndex;
@@ -2273,12 +2316,10 @@
                 columnIndex++;
             }
 
-            // <text x="0" y="${cellHeight + 4 * fontSize}" textLength="${cellWidth}" lengthAdjust="spacingAndGlyphs" class="text">${item.nColor}</text>
-
             return `
             <svg
               x="${columnIndex * (cellWidth + borderWidth)}"
-              y="${rowIndex * (cellHeight + 4 * fontSize + 2 * borderWidth)}"
+              y="${rowIndex * (cellHeight + 4 * fontSize + 1 * borderWidth)}"
               width="${cellWidth}"
               height="${svgTagHeight}"
               viewBox="0 0 ${cellWidth} ${svgTagHeight}">
@@ -2289,19 +2330,18 @@
                 height="${cellHeight}"
                 style="fill: #${item.cHex}"
                 />
-              <text id="${item.cHex}-0" x="0" y="${cellHeight + fontSize}" class="text">#${item.cHex}</text>
-              <text id="${item.cHex}-1" x="0" y="${cellHeight + 2 * fontSize}" class="text">${item.cType}</text>
-              <text id="${item.cHex}-2" x="0" y="${cellHeight + 3 * fontSize}" class="text">${item.cName}</text>
-              <text id="${item.cHex}-3" x="0" y="${cellHeight + 4 * fontSize}" class="text">${item.nColor}</text>
+              <text id="${item.cHex}-0" x="0" y="${cellHeight + 1 * fontSize}" class="text">#${item.cHex}</text>
+              <text id="${item.cHex}-1" x="0" y="${cellHeight + 2 * fontSize + fontSize / 2}" class="text">${item.cType}</text>
+              <text id="${item.cHex}-2" x="0" y="${cellHeight + 3 * fontSize + fontSize / 2}" class="text">${item.cName}</text>
+              <text id="${item.cHex}-3" x="0" y="${cellHeight + 4 * fontSize + fontSize}" class="text">${item.nColor}</text>
             </svg>`
         })
 
-        // окошка дюйм на пол дюйма
-
         const rowNumber = Math.ceil(subArray.length / columnNumber);
+        console.log(rowNumber)
 
         const svgWidth = columnNumber * cellWidth + (columnNumber - 1) * borderWidth;
-        const svgHeight = rowNumber * svgTagHeight + (rowNumber - 1) * borderWidth;
+        const svgHeight = rowNumber * svgTagHeight + (rowNumber - 1) * (borderWidth - fontSize);
 
         return `<svg
           xmlns="http://www.w3.org/2000/svg"
@@ -2315,7 +2355,7 @@
     }
 
     function renderTable() {
-        const cellWidth = +document.getElementById("cell_width_input").value;
+        const cellWidth = getValue(Inputs.cellWidth)
 
         clearTable();
         document.getElementById("table_box").insertAdjacentHTML('beforeend', globalSVGTable);
@@ -2326,7 +2366,7 @@
             const bb = node.getBBox();
             if (bb.width > cellWidth) {
                 const widthTransform = cellWidth / bb.width;
-                node.setAttribute("transform", "matrix("+widthTransform+", 0, 0, 1, 0,0)");
+                node.setAttribute("transform", "matrix(" + widthTransform + ", 0, 0, 1, 0,0)");
             }
         })
     }
@@ -2336,7 +2376,11 @@
     }
 
     function handleTableChange() {
-        const tableWidth = +document.getElementById("table_width_input").value;
+        Object.values(Inputs).forEach((input) => {
+            localStorage.setItem(input.id, getValue(input))
+        })
+
+        const tableWidth = getValue(Inputs.tableWidth)
 
         if (tableWidth > 0) {
             globalSVGTable = createSVG()
@@ -2347,31 +2391,15 @@
     }
 
     function main() {
-        const cssUnits = [
-            {value: "cm", name: "Centimeters"},
-            {value: "mm", name: "Millimeters"},
-            {value: "Q", name: "Quarter-millimeters"},
-            {value: "in", name: "Inches"},
-            {value: "pc", name: "Picas"},
-            {value: "pt", name: "Points"},
-            {value: "px", name: "Pixels"},
-        ];
-
-        const options = cssUnits.map((unit) => `<option value="${unit.value}">${unit.name} (${unit.value})</option>`).join("")
-
-        document.querySelectorAll("select").forEach((s) => {
-            s.innerHTML = options
-        })
-
         // let's set default values
-        document.getElementById("measure_unit_select").value = "px";
-        document.getElementById("table_width_input").value = 10;
-        document.getElementById("cell_width_input").value = 300;
-        document.getElementById("cell_height_input").value = 300;
-        document.getElementById("font_size_input").value = 30;
-        document.getElementById("border_width_input").value = 55;
-        document.getElementById("on_page_count_input").value = 100;
-        document.getElementById("page_number_input").value = 1;
+        Object.values(Inputs).forEach((input) => {
+            const storedValue = localStorage.getItem(input.id)
+            if (!storedValue) {
+                setValue(input, input.default)
+            } else {
+                setValue(input, storedValue)
+            }
+        })
 
         handleTableChange();
     }
