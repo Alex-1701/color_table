@@ -121,7 +121,6 @@
     </div>
   </div>
 
-
   <div class="selectors">
     <div class="selector_without_unit">
       <label>Количество ячеек в строке</label>
@@ -148,7 +147,15 @@
 <input type="button" onclick="downloadFile();" value="Скачать">
 
 <div id="table_box"></div>
-</body>
+
+<footer>
+  <a href="https://github.com/Alex-1701/color_table" target="_blank">GitHub</a>
+  <a href="http://www.wtfpl.net/">
+    <img src="http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-4.png" width="80" height="15" alt="WTFPL"/>
+  </a>
+</footer>
+
+
 <script>
     const data = [
         {nColor: "11-0103", cName: "Egret", cHex: "efeee5", cType: "Light"},
@@ -2346,9 +2353,9 @@
                 height="${cellHeight}"
                 style="fill: #${item.cHex}"
                 />
-              <text id="${item.cHex}-0" x="0" y="${cellHeight + 1 * fontSize + 0.5 * fontSize}" class="text st1">#${item.cHex}</text>
-              <text id="${item.cHex}-1" x="0" y="${cellHeight + 2 * fontSize + 1 * fontSize}" class="text st1">${item.cType} ${item.cName}</text>
-              <text id="${item.cHex}-3" x="0" y="${cellHeight + 3 * fontSize + 1.5 * fontSize}" class="text st1">${item.nColor}</text>
+              <text id="${item.cHex}-0" x="0" y="${cellHeight + 1 * fontSize + (0.5 - 0.25) * fontSize}" class="text st1">#${item.cHex}</text>
+              <text id="${item.cHex}-1" x="0" y="${cellHeight + 2 * fontSize + (1 - 0.25 - 0.25) * fontSize}" class="text st1">${item.cType} ${item.cName}</text>
+              <text id="${item.cHex}-3" x="0" y="${cellHeight + 3 * fontSize + (1.5 - 0.25 - 0.25 - 0.25) * fontSize}" class="text st1">${item.nColor}</text>
             </svg>`
         })
 
@@ -2427,12 +2434,5 @@
     main()
 </script>
 
-
-<footer>
-  <a href="https://github.com/Alex-1701/color_table" target="_blank">GitHub</a>
-  <a href="http://www.wtfpl.net/">
-    <img src="http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-4.png" width="80" height="15" alt="WTFPL"/>
-  </a>
-</footer>
-
+</body>
 </html>
