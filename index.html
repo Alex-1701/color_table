@@ -2285,12 +2285,12 @@
 
         return `
           <style type="text/css">
-            .text {
+            .st1{
               font-family: Arial, Helvetica, sans-serif;
               width: ${cellWidth}px;
               overflow: hidden;
+              font-size:${fontSize}px;
             }
-            .st1{font-size:${fontSize}px;}
           </style>`
     }
 
@@ -2338,7 +2338,6 @@
                 columnIndex++;
             }
 
-
             return `
             <svg
               x="${columnIndex * (cellWidth + borderWidth)}"
@@ -2353,9 +2352,9 @@
                 height="${cellHeight}"
                 style="fill: #${item.cHex}"
                 />
-              <text id="${item.cHex}-0" x="0" y="${cellHeight + 1 * fontSize + (0.5 - 0.25) * fontSize}" class="text st1">#${item.cHex}</text>
-              <text id="${item.cHex}-1" x="0" y="${cellHeight + 2 * fontSize + (1 - 0.25 - 0.25) * fontSize}" class="text st1">${item.cType} ${item.cName}</text>
-              <text id="${item.cHex}-3" x="0" y="${cellHeight + 3 * fontSize + (1.5 - 0.25 - 0.25 - 0.25) * fontSize}" class="text st1">${item.nColor}</text>
+              <text x="0" y="${cellHeight + (1 * 1.25) * fontSize}" class="st1">#${item.cHex}</text>
+              <text x="0" y="${cellHeight + (2 * 1.25) * fontSize}" class="st1">${item.cType} ${item.cName}</text>
+              <text x="0" y="${cellHeight + (3 * 1.25) * fontSize}" class="st1">${item.nColor}</text>
             </svg>`
         })
 
