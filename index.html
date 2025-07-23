@@ -16,7 +16,6 @@
       }
 
       body {
-
           width: fit-content;
           background-color: lightgray;
           font-size: 14pt;
@@ -157,7 +156,179 @@
 
 
 <script>
-    const data = [
+    let data = [];
+
+    const Inputs = {
+        tableWidth: {id: "table_width_input", default: 10},
+        cellWidth: {id: "cell_width_input", default: 300},
+        cellHeight: {id: "cell_height_input", default: 300},
+        fontSize: {id: "font_size_input", default: 30},
+        borderWidth: {id: "border_width_input", default: 55},
+        onPageCount: {id: "on_page_count_input", default: 100},
+        pageNumber: {id: "page_number_input", default: 1},
+        scale: {id: "scale_input", default: 100},
+    }
+
+    function getValue(inputObject) {
+        return +document.getElementById(inputObject.id).value;
+    }
+
+    function setValue(inputObject, value) {
+        document.getElementById(inputObject.id).value = value;
+    }
+
+    const generateStyle = () => {
+        const cellWidth = getValue(Inputs.cellWidth)
+        const fontSize = getValue(Inputs.fontSize)
+
+        return `
+          <style type="text/css">
+            .st1{
+              font-family: Arial, Helvetica, sans-serif;
+              width: ${cellWidth}px;
+              overflow: hidden;
+              font-size:${fontSize}px;
+            }
+          </style>`
+    }
+
+    let globalSVGTable;
+
+    function downloadFile() {
+        const svgContent = document.getElementById("table_box").innerHTML;
+        const noScaledSVGContent = svgContent.replace(/transform=".*"/gm, "");
+
+        const filename = "table.svg";
+        const blob = new Blob([noScaledSVGContent], {type: 'image/svg+xml'});
+
+        const a = document.createElement('a');
+        a.download = filename;
+        a.href = window.URL.createObjectURL(blob);
+        a.dataset.downloadurl = ['image/svg+xml', a.download, a.href].join(':');
+        a.click();
+    }
+
+    function createSVG() {
+        const columnNumber = getValue(Inputs.tableWidth)
+        const cellWidth = getValue(Inputs.cellWidth)
+        const cellHeight = getValue(Inputs.cellHeight)
+        const borderWidth = getValue(Inputs.borderWidth);
+        const numberOnPage = getValue(Inputs.onPageCount)
+        const pageNumber = getValue(Inputs.pageNumber)
+        const fontSize = getValue(Inputs.fontSize)
+        const scale = getValue(Inputs.scale)
+
+        let rowIndex = 0;
+        let columnIndex = 0;
+
+        const startNumber = (pageNumber - 1) * numberOnPage;
+        const subArray = data.slice(startNumber, startNumber + numberOnPage);
+
+        const svgTagHeight = cellHeight + 5 * fontSize;
+
+        const cellsArray = subArray.map((item, index) => {
+            const prevRowIndex = rowIndex;
+            rowIndex = Math.floor(index / columnNumber);
+
+            if (rowIndex > prevRowIndex) {
+                columnIndex = 0;
+            } else if (index > 0) {
+                columnIndex++;
+            }
+
+            return `
+            <svg
+              x="${columnIndex * (cellWidth + borderWidth)}"
+              y="${rowIndex * (cellHeight + 4 * fontSize + 1 * borderWidth)}"
+              width="${cellWidth}"
+              height="${svgTagHeight}"
+              viewBox="0 0 ${cellWidth} ${svgTagHeight}">
+              <rect
+                x="0"
+                y="0"
+                width="${cellWidth}"
+                height="${cellHeight}"
+                style="fill: #${item.cHex}"
+                />
+              <text x="0" y="${cellHeight + (1 * 1.25) * fontSize}" class="st1">#${item.cHex}</text>
+              <text x="0" y="${cellHeight + (2 * 1.25) * fontSize}" class="st1">${item.cType} ${item.cName}</text>
+              <text x="0" y="${cellHeight + (3 * 1.25) * fontSize}" class="st1">${item.nColor}</text>
+            </svg>`
+        })
+
+        const rowNumber = Math.ceil(subArray.length / columnNumber);
+
+        const svgWidth = columnNumber * cellWidth + (columnNumber - 1) * borderWidth;
+        const svgHeight = rowNumber * svgTagHeight + (rowNumber - 1) * (borderWidth - fontSize);
+
+        const realScale = scale / 100;
+
+        document.getElementById("table_box").style.height = `${svgHeight * realScale}px`;
+        document.getElementById("table_box").style.width = `${svgWidth * realScale}px`;
+
+        return `<svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="${svgWidth}"
+          height="${svgHeight}"
+          viewBox="0 0 ${svgWidth} ${svgHeight}"
+          transform="scale(${realScale}) translate(${(svgWidth - svgWidth / realScale) / 2}, ${(svgHeight - svgHeight / realScale) / 2})"
+          >
+            ${generateStyle()}
+            ${cellsArray.join("")}
+        </svg>`;
+    }
+
+    function renderTable() {
+        const cellWidth = getValue(Inputs.cellWidth)
+
+        clearTable();
+        document.getElementById("table_box").insertAdjacentHTML('beforeend', globalSVGTable);
+
+        const textNodes = document.querySelectorAll("text");
+
+        textNodes.forEach((node) => {
+            const bb = node.getBBox();
+            if (bb.width > cellWidth) {
+                const widthTransform = cellWidth / bb.width;
+                node.setAttribute("transform", "matrix(" + widthTransform + ", 0, 0, 1, 0,0)");
+            }
+        })
+    }
+
+    function clearTable() {
+        document.getElementById("table_box").innerHTML = "";
+    }
+
+    function handleTableChange() {
+        Object.values(Inputs).forEach((input) => {
+            localStorage.setItem(input.id, getValue(input))
+        })
+
+        const tableWidth = getValue(Inputs.tableWidth)
+
+        if (tableWidth > 0) {
+            globalSVGTable = createSVG()
+            renderTable()
+        } else {
+            clearTable()
+        }
+    }
+
+    function main() {
+        // let's set default values
+        Object.values(Inputs).forEach((input) => {
+            const storedValue = localStorage.getItem(input.id)
+            if (!storedValue) {
+                setValue(input, input.default)
+            } else {
+                setValue(input, storedValue)
+            }
+        })
+
+        handleTableChange();
+    }
+
+    data = [
         {nColor: "11-0103", cName: "Egret", cHex: "efeee5", cType: "Light"},
         {nColor: "11-0104", cName: "Vanilla Ice", cHex: "efefdf", cType: "Light"},
         {nColor: "11-0105", cName: "Antique White", cHex: "efead7", cType: "Light"},
@@ -2258,180 +2429,9 @@
         {nColor: "19-6050", cName: "Eden", cHex: "2a523d", cType: "Dark"},
         {nColor: "19-6110", cName: "Deep Forest", cHex: "37413b", cType: "Dark"},
         {nColor: "19-6311", cName: "Greener Pastures", cHex: "2c4c32", cType: "Dark"}
-    ]
+    ];
 
-    const Inputs = {
-        tableWidth: {id: "table_width_input", default: 10},
-        cellWidth: {id: "cell_width_input", default: 300},
-        cellHeight: {id: "cell_height_input", default: 300},
-        fontSize: {id: "font_size_input", default: 30},
-        borderWidth: {id: "border_width_input", default: 55},
-        onPageCount: {id: "on_page_count_input", default: 100},
-        pageNumber: {id: "page_number_input", default: 1},
-        scale: {id: "scale_input", default: 100},
-    }
-
-    function getValue(inputObject) {
-        return +document.getElementById(inputObject.id).value;
-    }
-
-    function setValue(inputObject, value) {
-        document.getElementById(inputObject.id).value = value;
-    }
-
-    const generateStyle = () => {
-        const cellWidth = getValue(Inputs.cellWidth)
-        const fontSize = getValue(Inputs.fontSize)
-
-        return `
-          <style type="text/css">
-            .st1{
-              font-family: Arial, Helvetica, sans-serif;
-              width: ${cellWidth}px;
-              overflow: hidden;
-              font-size:${fontSize}px;
-            }
-          </style>`
-    }
-
-    let globalSVGTable;
-
-    function downloadFile() {
-        const svgContent = document.getElementById("table_box").innerHTML;
-        const noScaledSVGContent = svgContent.replace(/transform=".*"/gm, "");
-
-        const filename = "table.svg";
-        const blob = new Blob([noScaledSVGContent], {type: 'image/svg+xml'});
-
-        const a = document.createElement('a');
-        a.download = filename;
-        a.href = window.URL.createObjectURL(blob);
-        a.dataset.downloadurl = ['image/svg+xml', a.download, a.href].join(':');
-        a.click();
-    }
-
-    function createSVG() {
-        const columnNumber = getValue(Inputs.tableWidth)
-        const cellWidth = getValue(Inputs.cellWidth)
-        const cellHeight = getValue(Inputs.cellHeight)
-        const borderWidth = getValue(Inputs.borderWidth);
-        const numberOnPage = getValue(Inputs.onPageCount)
-        const pageNumber = getValue(Inputs.pageNumber)
-        const fontSize = getValue(Inputs.fontSize)
-        const scale = getValue(Inputs.scale)
-
-        let rowIndex = 0;
-        let columnIndex = 0;
-
-        const startNumber = (pageNumber - 1) * numberOnPage;
-        const subArray = data.slice(startNumber, startNumber + numberOnPage);
-
-        const svgTagHeight = cellHeight + 5 * fontSize;
-
-        const cellsArray = subArray.map((item, index) => {
-            const prevRowIndex = rowIndex;
-            rowIndex = Math.floor(index / columnNumber);
-
-            if (rowIndex > prevRowIndex) {
-                columnIndex = 0;
-            } else if (index > 0) {
-                columnIndex++;
-            }
-
-            return `
-            <svg
-              x="${columnIndex * (cellWidth + borderWidth)}"
-              y="${rowIndex * (cellHeight + 4 * fontSize + 1 * borderWidth)}"
-              width="${cellWidth}"
-              height="${svgTagHeight}"
-              viewBox="0 0 ${cellWidth} ${svgTagHeight}">
-              <rect
-                x="0"
-                y="0"
-                width="${cellWidth}"
-                height="${cellHeight}"
-                style="fill: #${item.cHex}"
-                />
-              <text x="0" y="${cellHeight + (1 * 1.25) * fontSize}" class="st1">#${item.cHex}</text>
-              <text x="0" y="${cellHeight + (2 * 1.25) * fontSize}" class="st1">${item.cType} ${item.cName}</text>
-              <text x="0" y="${cellHeight + (3 * 1.25) * fontSize}" class="st1">${item.nColor}</text>
-            </svg>`
-        })
-
-        const rowNumber = Math.ceil(subArray.length / columnNumber);
-
-        const svgWidth = columnNumber * cellWidth + (columnNumber - 1) * borderWidth;
-        const svgHeight = rowNumber * svgTagHeight + (rowNumber - 1) * (borderWidth - fontSize);
-
-        const realScale = scale / 100;
-
-        document.getElementById("table_box").style.height = `${svgHeight * realScale}px`;
-        document.getElementById("table_box").style.width = `${svgWidth * realScale}px`;
-
-        return `<svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="${svgWidth}"
-          height="${svgHeight}"
-          viewBox="0 0 ${svgWidth} ${svgHeight}"
-          transform="scale(${realScale}) translate(${(svgWidth - svgWidth / realScale) / 2}, ${(svgHeight - svgHeight / realScale) / 2})"
-          >
-            ${generateStyle()}
-            ${cellsArray.join("")}
-        </svg>`;
-    }
-
-    function renderTable() {
-        const cellWidth = getValue(Inputs.cellWidth)
-
-        clearTable();
-        document.getElementById("table_box").insertAdjacentHTML('beforeend', globalSVGTable);
-
-        const textNodes = document.querySelectorAll("text");
-
-        textNodes.forEach((node) => {
-            const bb = node.getBBox();
-            if (bb.width > cellWidth) {
-                const widthTransform = cellWidth / bb.width;
-                node.setAttribute("transform", "matrix(" + widthTransform + ", 0, 0, 1, 0,0)");
-            }
-        })
-    }
-
-    function clearTable() {
-        document.getElementById("table_box").innerHTML = "";
-    }
-
-    function handleTableChange() {
-        Object.values(Inputs).forEach((input) => {
-            localStorage.setItem(input.id, getValue(input))
-        })
-
-        const tableWidth = getValue(Inputs.tableWidth)
-
-        if (tableWidth > 0) {
-            globalSVGTable = createSVG()
-            renderTable()
-        } else {
-            clearTable()
-        }
-    }
-
-    function main() {
-        // let's set default values
-        Object.values(Inputs).forEach((input) => {
-            const storedValue = localStorage.getItem(input.id)
-            if (!storedValue) {
-                setValue(input, input.default)
-            } else {
-                setValue(input, storedValue)
-            }
-        })
-
-        handleTableChange();
-    }
-
-    main()
+    main();
 </script>
-
 </body>
 </html>
